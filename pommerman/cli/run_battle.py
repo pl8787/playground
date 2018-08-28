@@ -71,7 +71,7 @@ def run(args, num_times=1, seed=None):
                 do_sleep=do_sleep)
             if do_sleep:
                 time.sleep(5)
-            env.render(close=True)
+            # env.render(close=True)
 
         if record_json_dir:
             finished_at = datetime.now().isoformat()
@@ -160,7 +160,7 @@ def main():
         default=True,
         help="Whether we sleep after each rendering.")
     args = parser.parse_args()
-    run(args)
+    run(args, 10)
 
 
 if __name__ == "__main__":

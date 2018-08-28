@@ -225,6 +225,8 @@ class Pomme(gym.Env):
             rgb_array = graphics.PixelViewer.rgb_array(
                 self._board, self._board_size, self._agents,
                 self._is_partially_observable, self._agent_view_size)
+            if record_json_dir:
+                self.save_json(record_json_dir)
             return rgb_array[0]
 
         if self._viewer is None:
