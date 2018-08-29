@@ -7,7 +7,7 @@ P4="test::agents.SimpleAgent"
 pom_tf_battle \
     --agents=$P1","$P2","$P3","$P4 \
     --config=PommeFFACompetition-v0 #\
-    #--render \
+    # --render #\
     #--render_mode rgb_array \
     #--record_json_dir="../records/json/"
 

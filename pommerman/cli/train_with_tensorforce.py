@@ -38,13 +38,13 @@ class WrappedEnv(OpenAIGym):
         self.gym = gym
         self.visualize = visualize
 
-    def execute(self, actions):
+    def execute(self, action):
         if self.visualize:
             self.gym.render()
 
         obs = self.gym.get_observations()
         all_actions = self.gym.act(obs)
-        all_actions.insert(self.gym.training_agent, actions)
+        all_actions.insert(self.gym.training_agent, action)
         state, reward, terminal, _ = self.gym.step(all_actions)
         agent_state = self.gym.featurize(state[self.gym.training_agent])
         agent_reward = reward[self.gym.training_agent]
@@ -136,9 +136,11 @@ def main():
     atexit.register(functools.partial(clean_up_agents, agents))
     wrapped_env = WrappedEnv(env, visualize=args.render)
     runner = Runner(agent=agent, environment=wrapped_env)
-    runner.run(episodes=10, max_episode_timesteps=2000)
+    runner.run(episodes=200, max_episode_timesteps=2000)
     print("Stats: ", runner.episode_rewards, runner.episode_timesteps,
           runner.episode_times)
+
+    agent.save_model('./ppo_model/model')
 
     try:
         runner.close()
