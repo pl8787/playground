@@ -9,9 +9,11 @@ python train_with_tensorforce.py \
  --agents=tensorforce::ppo,test::agents.SimpleAgent,test::agents.SimpleAgent,test::agents.SimpleAgent \
  --config=PommeFFACompetition-v0
 """
+import sys
 import atexit
 import functools
 import os
+import numpy as np
 
 import argparse
 import docker
@@ -99,6 +101,10 @@ def main():
         default=None,
         help="File from which to load game state. Defaults to "
         "None.")
+    parser.add_argument(
+        "--model_save_dir",
+        default="./ppo_model/model",
+        help="Directory to save the learnt models.")
     args = parser.parse_args()
 
     config = args.config
@@ -136,11 +142,22 @@ def main():
     atexit.register(functools.partial(clean_up_agents, agents))
     wrapped_env = WrappedEnv(env, visualize=args.render)
     runner = Runner(agent=agent, environment=wrapped_env)
-    runner.run(episodes=200, max_episode_timesteps=2000)
-    print("Stats: ", runner.episode_rewards, runner.episode_timesteps,
-          runner.episode_times)
 
-    agent.save_model('./ppo_model/model')
+    num_epi = 20000
+    vis_epi = 100
+    max_reward = -10.0
+    for i in range(num_epi // vis_epi):
+        runner.run(episodes=vis_epi, max_episode_timesteps=2000)
+        m_reward = np.mean(runner.episode_rewards[-vis_epi:])
+        m_step = np.mean(runner.episode_timesteps[-vis_epi:])
+        m_time = np.mean(runner.episode_times[-vis_epi:])
+        print("[Iter %s]: %.3f %.3f %.3f" % (i, m_reward, m_step, m_time))
+        sys.stdout.flush()
+
+        if m_reward > max_reward:
+            max_reward = m_reward
+            agent.save_model(args.model_save_dir, False)
+            print("[Save] max_reward=%s" % (max_reward))
 
     try:
         runner.close()
