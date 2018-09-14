@@ -295,6 +295,52 @@ class Pomme(gym.Env):
             (board, bomb_blast_strength, bomb_life, position, ammo,
              blast_strength, can_kick, teammate, enemies))
 
+    @staticmethod
+    def featurize_2d(obs):
+        # TODO: history of n moves?
+        board = obs['board']
+
+        def expand_bomb_blast(board):
+            new_board = np.zeros(board.shape)
+            for i in range(board.shape[0]):
+                for j in range(board.shape[1]):
+                    if board[i][j] == 0:
+                        continue
+                    s = int(board[i][j] - 1)
+                    for ii in range(max(0, i-s), min(11, i+s+1)):
+                        new_board[ii, j] = 1
+                    for jj in range(max(0, j-s), min(11, j+s+1)):
+                        new_board[i, jj] = 1
+            return new_board
+
+        # convert board items into bitmaps
+        maps = [board == i for i in range(10)]
+        maps.append(expand_bomb_blast(obs['bomb_blast_strength']))
+        maps.append(expand_bomb_blast(obs['bomb_blast_strength'] - obs['bomb_life']))
+
+        # duplicate ammo, blast_strength and can_kick over entire map
+        maps.append(np.full(board.shape, obs['ammo']))
+        maps.append(np.full(board.shape, obs['blast_strength']))
+        maps.append(np.full(board.shape, obs['can_kick']))
+
+        # add my position as bitmap
+        position = np.zeros(board.shape)
+        position[obs['position']] = 1
+        maps.append(position)
+
+        # add teammate
+        if obs['teammate'] is not None:
+            maps.append(board == obs['teammate'].value)
+        else:
+            maps.append(np.zeros(board.shape))
+
+        # add enemies
+        enemies = [board == e.value for e in obs['enemies']]
+        maps.append(np.any(enemies, axis=0))
+
+        #assert len(maps) == NUM_CHANNELS
+        return np.stack(maps, axis=2)
+
     def save_json(self, record_json_dir):
         info = self.get_json_info()
         count = "{0:0=3d}".format(self._step_count)

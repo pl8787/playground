@@ -553,6 +553,16 @@ class ForwardModel(object):
             if training_agent is not None and training_agent not in alive_ids:
                 return True
             return len(alive) <= 1
+        elif game_type == constants.GameType.Team:
+            team_done = any([
+                            len(alive_ids) <= 1,
+                            alive_ids == [0, 2],
+                            alive_ids == [1, 3],
+                        ])
+            train_dead = (training_agent is not None) \
+                         and (training_agent not in alive_ids)
+            if team_done or train_dead:
+                return True
         elif any([
                 len(alive_ids) <= 1,
                 alive_ids == [0, 2],
@@ -617,6 +627,22 @@ class ForwardModel(object):
                 return [-1] * 4
             else:
                 # Game running: 0 for alive, -1 for dead.
+                return [int(agent.is_alive) - 1 for agent in agents]
+        elif game_type == constants.GameType.Team:
+            # We are playing a team game.
+            if any_lst_equal(alive_agents, [[0, 2], [0], [2]] + [[1, 3], [1], [3]]):
+                r = [-1] * 4
+                for x in alive_agents:
+                    r[x] = 1
+                return r
+            elif step_count >= max_steps:
+                # Game is over by max_steps. All agents tie.
+                return [-1] * 4
+            elif len(alive_agents) == 0:
+                # Everyone's dead. All agents tie.
+                return [-1] * 4
+            else:
+                # No team has yet won or lost.
                 return [int(agent.is_alive) - 1 for agent in agents]
         else:
             # We are playing a team game.
