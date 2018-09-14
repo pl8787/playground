@@ -1,0 +1,21 @@
+[
+    {
+        "type": "conv2d",
+        "size": 256
+    },
+    {
+        "type": "conv2d",
+        "size": 256
+    },
+    {
+        "type": "conv2d",
+        "size": 256
+    },
+    {
+        "type": "flatten"
+    },
+    {
+        "type": "dense",
+        "size": 128
+    }
+]

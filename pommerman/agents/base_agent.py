@@ -8,6 +8,7 @@ class BaseAgent:
 
     def __init__(self, character=characters.Bomber):
         self._character = character
+        self.trainable = False
 
     def __getattr__(self, attr):
         return getattr(self._character, attr)

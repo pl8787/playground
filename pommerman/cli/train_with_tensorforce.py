@@ -124,7 +124,8 @@ def main():
     training_agent = None
 
     for agent in agents:
-        if type(agent) == TensorForceAgent:
+        # if type(agent) == TensorForceAgent:
+        if agent.trainable:
             training_agent = agent
             env.set_training_agent(agent.agent_id)
             break
@@ -143,7 +144,7 @@ def main():
     wrapped_env = WrappedEnv(env, visualize=args.render)
     runner = Runner(agent=agent, environment=wrapped_env)
 
-    num_epi = 20000
+    num_epi = 200000
     vis_epi = 100
     max_reward = -10.0
     for i in range(num_epi // vis_epi):

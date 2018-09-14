@@ -10,11 +10,11 @@ tf_config = tf.ConfigProto()
 tf_config.gpu_options.allow_growth = True
 
 
-class PPOAgent(BaseAgent):
+class DQNAgent(BaseAgent):
     """The TensorForceAgent. Acts through the algorith, not here."""
 
     def __init__(self, model_path=None, network_path=None, character=characters.Bomber):
-        super(PPOAgent, self).__init__(character)
+        super(DQNAgent, self).__init__(character)
         self.agent = None
         self.model_path = model_path
         self.network_path = network_path
@@ -23,7 +23,7 @@ class PPOAgent(BaseAgent):
 
     def initialize(self, env):
         from gym import spaces
-        from tensorforce.agents import PPOAgent as tf_PPOAgent
+        from tensorforce.agents import DQNAgent as tf_DQNAgent
 
         self.env = env
 
@@ -41,12 +41,14 @@ class PPOAgent(BaseAgent):
         with open(self.network_path, 'r') as fp:
             network = json.load(fp=fp)
 
-        self.agent = tf_PPOAgent(
+        self.agent = tf_DQNAgent(
             states=dict(type='float', shape=[11, 11, 18]),
             actions=actions,
+            discount=0.9,
+            double_q_model=False,
             network=network,
             batching_capacity=1000,
-            step_optimizer=dict(type='adam', learning_rate=1e-4),
+            optimizer=dict(type='adam', learning_rate=1e-4),
             execution=dict(type='single', 
                            session_config=tf_config,
                            distributed_spec={})
